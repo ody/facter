@@ -1,4 +1,4 @@
-Facter.add(:ipaddress6, :ldapname => "iphostnumber", :timeout => 2) do
+Facter.add(:ipaddress6, :timeout => 2) do
     setcode do
         require 'resolv'
 
@@ -45,17 +45,14 @@ Facter.add(:ipaddress6) do
         ip = nil
         output = %x{/sbin/ifconfig}
 
-        output.split(/^\S/).each { |str|
-            if str =~ /inet6 addr: (?>[0-9,a-f,A-F]+\:{0,2})+/
-                tmp = $1
-                unless tmp =~ /fe80\:/ or tmp =~ /\:\:1/
-                    ip = tmp
-                    break
-                end
+        output.scan(/inet6 addr: ((?>[0-9,a-f,A-F]*\:{0,2})+)/).each { |str|
+            unless str =~ /fe80\:/ or str =~ /\:\:1/
+                ip = str
             end
         }
 
         ip
+
     end
 end
 
@@ -65,13 +62,10 @@ Facter.add(:ipaddress6) do
        ip = nil
        output = %x{/usr/sbin/ifconfig -a}
 
-       output.split(/^\S/).each { |str|
-       if str =~ /inet6 (?>[0-9,a-f,A-F]+\:{0,2})+/
-                tmp = $1
-                unless tmp =~ /fe80\:/ or tmp =~ /\:\:1/
-                    ip = tmp
+       output.scan(/inet6 ((?>[0-9,a-f,A-F]*\:{0,2})+)/).each { |str|
+                unless str =~ /fe80\:/ or str =~ /\:\:1/
+                    ip = str
                 end
-            end
         }
 
         ip
@@ -84,7 +78,7 @@ Facter.add(:ipaddress6) do
        ip = nil
        output = %x{/sbin/ifconfig -a}
 
-       tmp = output.scan(/inet6 ((?>[0-9,a-f,A-F]+\:{0,2})+)/).each { |str|
+       output.scan(/inet6 ((?>[0-9,a-f,A-F]*\:{0,2})+)/).each { |str|
                 unless str =~ /fe80\:/ or str =~ /\:\:1/
                     ip = str
                 end
