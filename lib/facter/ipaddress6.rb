@@ -1,3 +1,9 @@
+# Cody Herriges <c.a.herriges@gmail.com>
+#
+# Used the ipaddress fact that is already part of
+# Facter as a template.
+
+
 # Uses ruby's own resolv class which queries DNS and /etc/hosts.
 # The closest thing to a default/primary IPv6 addresses is
 # assumed to be the AAAA that you have published via DNS or
