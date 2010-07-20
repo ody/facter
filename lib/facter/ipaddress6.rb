@@ -11,8 +11,8 @@ Facter.add(:ipaddress6, :timeout => 2) do
         Resolv.getaddresses(hostname).each { |str|
           if str =~ /(?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4}/ and !~ /\:\:1/
             ip = str
+          end
         }
-        end
 
       ip
 
