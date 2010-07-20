@@ -13,8 +13,9 @@ Facter.add(:ipaddress6, :timeout => 2) do
     require 'resolv'
 
     begin
-      if hostname = Facter.value(:hostname)
-        Resolv.getaddresses(hostname).each { |str|
+      if fqdn = Facter.value(:fqdn)
+        ip = nil
+        Resolv.getaddresses(fqdn).each { |str|
           str = str.to_s
           if str =~ /(?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4}/ and str != "::1"
             ip = str
@@ -37,11 +38,12 @@ end
 # Uses the OS' host command to do a DNS lookup.
 Facter.add(:ipaddress6, :timeout => 2) do
   setcode do
-  if hostname = Facter.value(:hostname)
+  if fqdn = Facter.value(:fqdn)
     # we need Hostname to exist for this to work
+    ip = nil
     host = nil
-    if host = Facter::Util::Resolution.exec("host -t AAAA #{hostname}")
-      host.scan(/((?>[0-9,a-f,A-F]{0,4}\:{1,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
+    if host = Facter::Util::Resolution.exec("host -t AAAA #{fqdn}")
+      host.scan(/((?>[0-9,a-f,A-F]{0,4}\:{1,2})+[0-9,a-f,A-F]{0,4}&)/).each { |str|
       str = str.to_s
       unless str =~ /fe80.*/ or str == "::1"
        ip = str
@@ -106,7 +108,7 @@ Facter.add(:ipaddress6) do
 
     output.scan(/inet6 ((?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
       str = str.to_s
-      unless str =~ /fe80.*/ or str == '::1'
+      unless str =~ /fe80.*/ or str == "::1"
         ip = str
       end
       }
