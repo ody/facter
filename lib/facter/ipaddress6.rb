@@ -9,7 +9,8 @@ Facter.add(:ipaddress6, :timeout => 2) do
     begin
       if hostname = Facter.value(:hostname)
         Resolv.getaddresses(hostname).each { |str|
-          if str =~ /(?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4}/ and !~ /\:\:1/
+          str = str.to_s
+          if str =~ /(?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4}/ and str != "::1"
             ip = str
           end
         }
@@ -35,7 +36,8 @@ Facter.add(:ipaddress6, :timeout => 2) do
     host = nil
     if host = Facter::Util::Resolution.exec("host -t AAAA #{hostname}")
       host.scan(/((?>[0-9,a-f,A-F]{0,4}\:{1,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
-      unless str =~ /fe80\:/ or str =~ /\:\:1/
+      str = str.to_s
+      unless str =~ /fe80.*/ or str == "::1"
        ip = str
       end
     }
@@ -61,7 +63,8 @@ Facter.add(:ipaddress6) do
     output = %x{/sbin/ifconfig}
 
     output.scan(/inet6 addr: ((?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
-      unless str =~ /fe80\:/ or str =~ /\:\:1/
+      str = str.to_s
+      unless str =~ /fe80\:/ or str == "::1"
         ip = str
       end
     }
@@ -78,7 +81,8 @@ Facter.add(:ipaddress6) do
     output = %x{/usr/sbin/ifconfig -a}
 
     output.scan(/inet6 ((?>[0-9,a-f,A-F]*\:{0,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
-      unless str =~ /fe80\:/ or str =~ /\:\:1/
+      str = str.to_s
+      unless str =~ /fe80.*/ or str == "::1"
         ip = str
       end
     }
@@ -95,7 +99,8 @@ Facter.add(:ipaddress6) do
     output = %x{/sbin/ifconfig -a}
 
     output.scan(/inet6 ((?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
-      unless str =~ /fe80\:/ or str =~ /\:\:1/
+      str = str.to_s
+      unless str =~ /fe80.*/ or str == '::1'
         ip = str
       end
       }
