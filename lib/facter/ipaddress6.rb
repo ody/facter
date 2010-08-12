@@ -39,7 +39,6 @@ end
 Facter.add(:ipaddress6, :timeout => 2) do
   setcode do
   if fqdn = Facter.value(:fqdn)
-    # we need Hostname to exist for this to work
     ip = nil
     host = nil
     if host = Facter::Util::Resolution.exec("host -t AAAA #{fqdn}")
@@ -72,7 +71,7 @@ Facter.add(:ipaddress6) do
 
     output.scan(/inet6 addr: ((?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
       str = str.to_s
-      unless str =~ /fe80\:/ or str == "::1"
+      unless str =~ /fe80.*/ or str == "::1"
         ip = str
       end
     }
@@ -85,8 +84,15 @@ end
 Facter.add(:ipaddress6) do
   confine :kernel => %w{SunOS}
   setcode do
+    interout = %{/bin/netstat -rn -f inet6}
+    interface = interout.scan(/^default\s+fe80\S+\s+[A-Z]+\s+\d\s+\d+\s+([a-z]+\d)/)
+    if interface != nil
+      output = %{/usr/sbin/ifconfig #{interface}}
+    else
+      puts "Unable to find a default route interface, using first non-loopback address"
+      output = %x{/usr/sbin/ifconfig -a}
+    end
     ip = nil
-    output = %x{/usr/sbin/ifconfig -a}
 
     output.scan(/inet6 ((?>[0-9,a-f,A-F]*\:{0,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
       str = str.to_s
@@ -103,8 +109,15 @@ end
 Facter.add(:ipaddress6) do
   confine :kernel => %w{Darwin}
   setcode do
+    interout = %{/usr/sbin/netstat -rn -f inet6}
+    interface = interout.scan(/^default\s+fe80\S+\s+[A-Z]+\s+\d\s+\d+\s+([a-z]+\d)/)
+    if interface
+      output = %{/sbin/ifconfig #{interface}}
+    else
+      puts "Unable to find a default route interface, using first non-loopback address"
+      output = %x{/sbin/ifconfig -a}
+    end
     ip = nil
-    output = %x{/sbin/ifconfig -a}
 
     output.scan(/inet6 ((?>[0-9,a-f,A-F]*\:{1,2})+[0-9,a-f,A-F]{0,4})/).each { |str|
       str = str.to_s
